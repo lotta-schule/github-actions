@@ -1,0 +1,33 @@
+name: 'Add issue to project'
+
+on:
+  workflow_call:
+    inputs:
+      project_number:
+        required: true
+        type: number
+
+jobs:
+  add-to-project:
+    name: Add to triage project
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: is-collaborator
+        run: |
+          gh api graphql -f query='
+            query($org: String!, $repo: String!, $user: String!) {
+              repository(owner: $org, name: $repo) {
+                collaborators(query: $user, first: 1) {
+                  totalCount
+                }
+              }
+            } ' -f org=${{ github.repository_owner }} -f repo=${{ github.event.repository.name }} -f user=${{ github.event.issue.user.login }} > collaborators.json
+
+          echo 'IS_COLLABORATOR='$(jq -r '.data.repository.collaborators.totalCount' collaborators.json) >> $GITHUB_ENV
+
+      - uses: actions/add-to-project@v0.4.1
+        if: ${{ env.IS_COLLABORATOR == 0 }}
+        with:
+          project-url: https://github.com/orgs/${{github.repository_owner}}/projects/${{inputs.project_number}}
