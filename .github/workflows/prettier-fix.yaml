@@ -1,0 +1,35 @@
+name: 'Run prettier and fix possible errors'
+on:
+  # makes this workflow reusable
+  workflow_call:
+    inputs:
+      target:
+        description: 'A glob describing the files to prettify'
+        required: false
+        type: string
+        default: '.'
+      working-directory:
+        required: false
+        type: string
+
+jobs:
+  run-prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Run prettier
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          npx prettier --write ${{ inputs.target }} --no-error-on-unmatched-pattern
+
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: Run code formatter'
+          commit_user_name: 'Lotta Github Bot'
+          commit_user_email: 'dev@lotta.schule'
+          commit_author: Lotta Github Bot <dev@lotta.schule>
+          skip_dirty_check: false
