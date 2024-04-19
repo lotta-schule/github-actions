@@ -23,7 +23,7 @@ jobs:
       - name: Run prettier
         working-directory: ${{ inputs.working-directory }}
         run: |
-          npx prettier --write ${{ inputs.target }} --no-error-on-unmatched-pattern
+          npx prettier --write '${{ inputs.target }}' --no-error-on-unmatched-pattern
 
 
       - uses: stefanzweifel/git-auto-commit-action@v5
