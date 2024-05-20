@@ -8,8 +8,8 @@ on:
         type: number
     secrets:
       github-token:
+        required: false
         description: 'The GitHub token for the repository'
-        default: ${{ github.token }}
 
 jobs:
   add-to-project:
@@ -18,7 +18,7 @@ jobs:
     permissions:
       issues: write
     env:
-      GITHUB_TOKEN: ${{ secrets.github-token }}
+      GITHUB_TOKEN: ${{ secrets.github-token || github.token }}
     steps:
       - name: Check if user is a collaborator
         run: |
