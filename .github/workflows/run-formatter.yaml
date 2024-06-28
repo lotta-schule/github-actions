@@ -34,6 +34,15 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
 
+      - uses: actions/cache@v3
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix- 
+
       - name: Setup the BEAM and Elixir
         uses: erlef/setup-beam@v1
         with:
@@ -62,6 +71,8 @@ jobs:
           for formatterfile in $formatter_files; do
             dir=$(dirname $formatterfile)
             cd $dir
+            echo "Running mix deps.get in $dir"
+            mix deps.get || true
             echo "Running mix format in $dir"
             mix format || true
             cd $base_dir
