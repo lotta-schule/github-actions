@@ -64,17 +64,15 @@ jobs:
             echo "Running prettier in $dir"
             npx prettier \
               --write "$dir/ '**/*.{js,jsx,ts,tsx,json,css,scss,html,md}'" \
-              --no-error-on-unmatched-pattern
+              --no-error-on-unmatched-pattern || true
             cd $base_dir
           done
 
           for formatterfile in $formatter_files; do
             dir=$(dirname $formatterfile)
             cd $dir
-            echo "Running mix deps.get in $dir"
-            mix deps.get || true
-            echo "Running mix format in $dir"
-            mix format || true
+            echo "Running mix deps.get and mix format in $dir"
+            (mix deps.get && mix format) || true
             cd $base_dir
           done
 
