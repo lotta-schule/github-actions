@@ -43,6 +43,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-mix- 
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
       - name: Setup the BEAM and Elixir
         uses: erlef/setup-beam@v1
         with:
