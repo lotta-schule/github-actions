@@ -1,0 +1,70 @@
+name: 'Check for formatter config files and run the formatter'
+on:
+  # makes this workflow reusable
+  workflow_call:
+    inputs:
+      working-directory:
+        description: |
+          The directory to start in when running prettier and mix format.
+          Defaults to the root of the repository.
+          A file search will be done and the formatter be run in every directory with a given file:
+          eslint.config.js -> prettier will run
+          .formatter.exs -> mix format will run
+        required: false
+        default: .
+        type: string
+      otp-version:
+        description: 'The version of the BEAM to use'
+        required: false
+        type: string
+        default: '26.2.2'
+      elixir-version:
+        description: 'The version of Elixir to use'
+        required: false
+        type: string
+        default: '1.16.1'
+
+
+jobs:
+  run-formatter:
+    name: Fix unfomatted code and commit the changes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Setup the BEAM and Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{ inputs.otp-version }}
+          elixir-version: ${{ inputs.elixir-version }}
+
+      - name: Run prettier
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          cd ${{ inputs.working-directory }}
+          base_dir=$(pwd)
+
+          eslint_config_files=$(find $base_dir -name 'eslint.config.js')
+          formatter_files=$(find $base_dir -name '.formatter.exs')
+
+          for eslintfile in $eslint_config_files; do
+            dir=$(dirname $eslintfile)
+            echo "Running prettier in $dir"
+            npx prettier --write "$dir/ '**/*.{js,jsx,ts,tsx,json,css,scss,html,md}'" --no-error-on-unmatched-pattern
+          done
+
+          for formatterfile in $formatter_files; do
+            dir=$(dirname $formatterfile)
+            echo "Running mix format in $dir"
+            mix format
+          done
+
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: Run code formatter'
+          commit_user_name: 'Lotta Github Bot'
+          commit_user_email: 'dev@lotta.schule'
+          commit_author: Lotta Github Bot <dev@lotta.schule>
+          skip_dirty_check: false
