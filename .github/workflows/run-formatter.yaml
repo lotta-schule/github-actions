@@ -51,14 +51,20 @@ jobs:
 
           for eslintfile in $eslint_config_files; do
             dir=$(dirname $eslintfile)
+            cd $dir
             echo "Running prettier in $dir"
-            npx prettier --write "$dir/ '**/*.{js,jsx,ts,tsx,json,css,scss,html,md}'" --no-error-on-unmatched-pattern
+            npx prettier \
+              --write "$dir/ '**/*.{js,jsx,ts,tsx,json,css,scss,html,md}'" \
+              --no-error-on-unmatched-pattern
+            cd $base_dir
           done
 
           for formatterfile in $formatter_files; do
             dir=$(dirname $formatterfile)
+            cd $dir
             echo "Running mix format in $dir"
-            mix format
+            mix format || true
+            cd $base_dir
           done
 
       - uses: stefanzweifel/git-auto-commit-action@v5
