@@ -37,4 +37,4 @@ jobs:
         if: ${{ env.IS_COLLABORATOR == 0 }}
         with:
           project-url: https://github.com/orgs/${{github.repository_owner}}/projects/${{inputs.project_number}}
-          gthub-token: ${{ env.GITHUB_TOKEN }}
+          github-token: ${{ env.GITHUB_TOKEN }}
