@@ -1,4 +1,4 @@
-name: 'Check for formatter config files and run the formatter'
+name: "Check for formatter config files and run the formatter"
 on:
   # makes this workflow reusable
   workflow_call:
@@ -13,24 +13,28 @@ on:
         required: false
         default: .
         type: string
+      node-version:
+        description: "The version of NodeJS to use"
+        required: false
+        type: string
+        default: "1.16.1"
       otp-version:
-        description: 'The version of the BEAM to use'
+        description: "The version of the BEAM to use"
         required: false
         type: string
-        default: '26.2.2'
+        default: "28.0.2"
       elixir-version:
-        description: 'The version of Elixir to use'
+        description: "The version of Elixir to use"
         required: false
         type: string
-        default: '1.16.1'
-
+        default: "1.18.4"
 
 jobs:
   run-formatter:
     name: Fix unfomatted code and commit the changes
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ github.head_ref }}
 
@@ -41,12 +45,13 @@ jobs:
             _build
           key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
-            ${{ runner.os }}-mix- 
+            ${{ runner.os }}-mix-
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24.5
+          cache: "pnpm"
 
       - name: Setup the BEAM and Elixir
         uses: erlef/setup-beam@v1
@@ -67,7 +72,7 @@ jobs:
             dir=$(dirname $eslintfile)
             cd $dir
             echo "Running prettier in $dir"
-            npx prettier \
+            pnpm dlx prettier \
               --write "$dir/ '**/*.{js,jsx,ts,tsx,json,css,scss,html,md}'" \
               --no-error-on-unmatched-pattern || true
             cd $base_dir
@@ -83,8 +88,8 @@ jobs:
 
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: 'chore: Run code formatter'
-          commit_user_name: 'Lotta Github Bot'
-          commit_user_email: 'dev@lotta.schule'
+          commit_message: "chore: Run code formatter"
+          commit_user_name: "Lotta Github Bot"
+          commit_user_email: "dev@lotta.schule"
           commit_author: Lotta Github Bot <dev@lotta.schule>
           skip_dirty_check: false
