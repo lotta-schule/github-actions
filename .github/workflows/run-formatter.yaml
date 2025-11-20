@@ -13,6 +13,11 @@ on:
         required: false
         default: .
         type: string
+      pnpm-version:
+        description: "The version of PNPM to use"
+        required: false
+        type: string
+        default: "10"
       node-version:
         description: "The version of NodeJS to use"
         required: false
@@ -46,6 +51,11 @@ jobs:
           key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
             ${{ runner.os }}-mix-
+
+      - name: Setup PNPM package manager
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ inputs.pnpm-version }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
