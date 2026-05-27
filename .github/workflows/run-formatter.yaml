@@ -13,8 +13,18 @@ on:
         required: false
         default: .
         type: string
+      package-manager:
+        description: "The package manager to use: 'pnpm' or 'bun'"
+        required: false
+        type: string
+        default: "pnpm"
+      bun-version:
+        description: "The version of Bun to use (only when package-manager is 'bun')"
+        required: false
+        type: string
+        default: "latest"
       pnpm-version:
-        description: "The version of PNPM to use"
+        description: "The version of PNPM to use (only when package-manager is 'pnpm')"
         required: false
         type: string
         default: "10"
@@ -53,15 +63,29 @@ jobs:
             ${{ runner.os }}-mix-
 
       - name: Setup PNPM package manager
+        if: ${{ inputs.package-manager == 'pnpm' }}
         uses: pnpm/action-setup@v3
         with:
           version: ${{ inputs.pnpm-version }}
 
-      - name: Setup Node.js
+      - name: Setup Node.js (pnpm)
+        if: ${{ inputs.package-manager == 'pnpm' }}
         uses: actions/setup-node@v4
         with:
-          node-version: 24.5
+          node-version: ${{ inputs.node-version }}
           cache: "pnpm"
+
+      - name: Setup Bun
+        if: ${{ inputs.package-manager == 'bun' }}
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ inputs.bun-version }}
+
+      - name: Setup Node.js (bun)
+        if: ${{ inputs.package-manager == 'bun' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
 
       - name: Setup the BEAM and Elixir
         uses: erlef/setup-beam@v1
@@ -71,9 +95,17 @@ jobs:
 
       - name: Run prettier
         working-directory: ${{ inputs.working-directory }}
+        env:
+          PACKAGE_MANAGER: ${{ inputs.package-manager }}
         run: |
           cd ${{ inputs.working-directory }}
           base_dir=$(pwd)
+
+          if [ "$PACKAGE_MANAGER" = "bun" ]; then
+            DLX_CMD="bunx"
+          else
+            DLX_CMD="pnpm dlx"
+          fi
 
           eslint_config_files=$(find $base_dir -name 'eslint.config.js')
           formatter_files=$(find $base_dir -name '.formatter.exs')
@@ -82,7 +114,7 @@ jobs:
             dir=$(dirname $eslintfile)
             cd $dir
             echo "Running prettier in $dir"
-            pnpm dlx prettier \
+            $DLX_CMD prettier \
               --write "$dir/ '**/*.{js,jsx,ts,tsx,json,css,scss,html,md}'" \
               --no-error-on-unmatched-pattern || true
             cd $base_dir
