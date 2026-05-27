@@ -18,6 +18,11 @@ on:
         required: false
         type: string
         default: "pnpm"
+      bun-version:
+        description: "The version of Bun to use (only when package-manager is 'bun')"
+        required: false
+        type: string
+        default: "latest"
       pnpm-version:
         description: "The version of PNPM to use (only when package-manager is 'pnpm')"
         required: false
@@ -73,6 +78,8 @@ jobs:
       - name: Setup Bun
         if: ${{ inputs.package-manager == 'bun' }}
         uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ inputs.bun-version }}
 
       - name: Setup Node.js (bun)
         if: ${{ inputs.package-manager == 'bun' }}
